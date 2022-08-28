@@ -1,0 +1,689 @@
+openapi: 3.0.0
+info:
+  version: 2.0.0
+  title: goTom API for Campaigns and Flights
+
+
+paths:
+  /app-api/campaign:
+    post:
+      summary: Create the campaign by its external ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignCreate'
+      responses:
+        '201':
+          description: Campaign has been created
+        '400':
+          description: >
+            Returns a list of errors in the input data. For this call the following violation codes can be expected
+             * `1f06b2d7-49b4-4b8b-aa66-5172aeb01e97` - The externalId is already in use
+             * `5658b9ca-ce50-4a98-a0da-97d9361845e3` - An invalid ID field has been given (for example the `entityId`
+               in the customer object could not be found), here you have to refer to the `propertyPath` value to
+               find out which property caused the error
+             * `8d6a458b-362a-4b13-b3bb-fe0772a4fc7e` - If you have supplied a currency which is not configured for
+               your goTom instance you will get this error
+             * `6b3befbc-2f01-4ddf-be21-b57898905284` - If a dynamic expression constraint failed. Check the error message for further info.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolationResponse'
+        '500':
+          description: If your request broke our code. Send us your request-document to reproduce the error and we'll fix it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorResponse'
+
+  /app-api/campaign/{externalId}:
+    get:
+      summary: Retrieve the campaign by its external ID
+      parameters:
+        - in: path
+          name: externalId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Return the campaign data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignRead'
+
+        '404':
+          description: Campaign has not been found
+
+    post:
+      summary: Update the campaign by its external ID. All the properties are optional, only the supplied properties are changed.
+      parameters:
+        - in: path
+          name: externalId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignUpdate'
+      responses:
+        '204':
+          description: Campaign has been updated
+        '400':
+          description: >
+            Returns a list of errors in the input data. For this call the following violation codes can be expected
+             * `5658b9ca-ce50-4a98-a0da-97d9361845e3` - An invalid ID field has been given (for example the `entityId`
+               in the customer object could not be found), here you have to refer to the `propertyPath` value to
+               find out which property caused the error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConstraintViolationResponse'
+        '500':
+          description: If your request broke our code. Send us your request-document to reproduce the error and we'll fix it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorResponse'
+
+  /app-api/campaign/{campaignExternalId}/flight:
+    post:
+      summary: Create a new flight
+      parameters:
+        - in: path
+          name: campaignExternalId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightCreate'
+      responses:
+        '201':
+          description: Flight has been created
+        '404':
+          description: The campaign does not exist
+        '400':
+          description: >
+            Returns a list of errors in the input data. For this call the following violation codes can be expected
+             * `1f06b2d7-49b4-4b8b-aa66-5172aeb01e97` - The externalId is already in use
+             * `5658b9ca-ce50-4a98-a0da-97d9361845e3` - An invalid ID field has been given (for example the `platformId`
+               in the customer object could not be found), here you have to refer to the `propertyPath` value to
+               find out which property caused the error
+             * `e3a1d7f7-4fcf-4b7d-8d87-38a60126462f` - The combination of `platformId`, `channelId` and `advertisingId` does not exist
+             * `409d70bf-376e-4a21-a8d0-f75a4a6a7abc` - There is no price entry found for the combination of `platformId`, `channelId`, `advertisingId`, `tarifId`, `extraPriceLevelId` and `priceTypeId` does not exist
+        '500':
+          description: If your request broke our code. Send us your request-document to reproduce the error and we'll fix it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorResponse'
+
+  /app-api/campaign/{campaignExternalId}/flight/{externalId}:
+    get:
+      summary: Retrieve the flight by its external ID
+      parameters:
+        - in: path
+          name: campaignExternalId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: externalId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Return the campaign data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightRead'
+
+        '404':
+          description: Flight has not been found
+    post:
+      summary: Update the flight by its external ID. All the properties are optional, only the supplied properties are changed.
+      parameters:
+        - in: path
+          name: campaignExternalId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: externalId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightUpdate'
+      responses:
+        '204':
+          description: Flight has been updated
+        '404':
+          description: The campaign does not exist
+        '400':
+          description: >
+            Returns a list of errors in the input data. For this call the following violation codes can be expected
+             * `5658b9ca-ce50-4a98-a0da-97d9361845e3` - An invalid ID field has been given (for example the `platformId`
+               in the customer object could not be found), here you have to refer to the `propertyPath` value to
+               find out which property caused the error
+             * `e3a1d7f7-4fcf-4b7d-8d87-38a60126462f` - The combination of `platformId`, `channelId` and `advertisingId` does not exist
+             * `409d70bf-376e-4a21-a8d0-f75a4a6a7abc` - There is no price entry found for the combination of `platformId`, `channelId`, `advertisingId`, `tarifId`, `extraPriceLevelId` and `priceTypeId` does not exist
+             * `24a9375a-0b22-4676-9a29-9c9e7f2c195f` - The adServerId provided in the KeyValueSet is invalid
+        '500':
+          description: If your request broke our code. Send us your request-document to reproduce the error and we'll fix it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorResponse'
+
+
+  /app-api/campaign/{campaignExternalId}/flight/{externalId}/sublines:
+    get:
+      summary: Retrieve the flight's sublines by its external ID. This endpoint only available if the marketer network module is active.
+      parameters:
+        - in: path
+          name: campaignExternalId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: externalId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Return the campaign data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightSublines'
+
+        '404':
+          description: Flight has not been found
+    post:
+      summary: Create/Update the sublines for a flight. This endpoint only available if the marketer network module is active.
+      parameters:
+        - in: path
+          name: campaignExternalId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: externalId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightSublines'
+      responses:
+        '204':
+          description: Sublines have been updated
+        '404':
+          description: The campaign or flight does not exist
+        '400':
+          description: >
+            Returns a list of errors in the input data. For this call the following violation codes can be expected
+             * `d368a263-4bd7-4f21-bccf-1188df46991c` - The `platformId` of the given subline does not belong to the network defined in the flight's `platformId`.
+             * `3b254c3d-590c-4edc-b763-c49f5a703355` - The `percentage` values of all `sublines` do not add up to 100%
+        '500':
+          description: If your request broke our code. Send us your request-document to reproduce the error and we'll fix it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorResponse'
+
+
+  /app-api/campaign/{campaignExternalId}/document:
+    post:
+      summary: Create a new campaign document for an existing campaign.
+      parameters:
+        - in: path
+          name: campaignExternalId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '201':
+          description: Document has been created
+        '404':
+          description: The campaign does not exist
+
+components:
+  schemas:
+    Campaign:
+      title: A goTom campaign
+      type: object
+      properties:
+        name:
+          description: Corresponds with the field "Kampagne"
+          type: string
+        status:
+          description: Corresponds with the field "Status"
+          type: string
+          default: booking
+          enum: [ booking, reservation ]
+        bookingDate:
+          description: Corresponds with the field "Buchungsdatum"
+          type: string
+          format: date
+        campaignTypeId:
+          description: Corresponds with the field "Kampagnentyp"
+          type: integer
+          example: 1
+        campaignTypeReference:
+          description: Corresponds with the field "Kampagnentyp Referenz"
+          type: string
+
+        customer:
+          description: Corresponds with the field "Kunde"
+          allOf:
+            - $ref: "#/components/schemas/ContactRef"
+
+        intermediator:
+          description: Corresponds with the field "Vermittler"
+          allOf:
+            - $ref: "#/components/schemas/ContactRef"
+
+        agency:
+          description: Corresponds with the field "Agentur"
+          allOf:
+            - $ref: "#/components/schemas/ContactRef"
+
+        note:
+          description: Corresponds with the Field "Bemerkungen"
+          type: string
+
+        noteInternal:
+          description: Corresponds with the Field "Interne Bemerkungen"
+          type: string
+
+        noteReservation:
+          description: Corresponds with the Field "Reservationsabklärung"
+          type: string
+
+    CampaignUpdate:
+      allOf:
+        - $ref: "#/components/schemas/Campaign"
+        - $ref: "#/components/schemas/CampaignSalesMixin"
+
+    FlightUpdate:
+      allOf:
+        - $ref: "#/components/schemas/Flight"
+        - type: object
+          properties:
+            adServerPushChanges:
+              type: object
+              properties:
+                adServerId:
+                  type: string
+                types:
+                  type: string
+                  enum:
+                    - runtime
+                    - units
+                    - other
+                    - placements
+                remarks:
+                  type: string
+
+    CampaignCreate:
+      required:
+        - externalId
+        - status
+        - bookingDate
+        - customer
+      allOf:
+        - $ref: "#/components/schemas/Campaign"
+        - $ref: "#/components/schemas/CampaignSalesMixin"
+        - type: object
+          properties:
+            externalId:
+              type: string
+
+            currency:
+              description: Corresponds with the field "Währung". Currency of the campaign (the instance default is used if none is supplied)
+              type: string
+
+    CampaignRead:
+      allOf:
+        - $ref: "#/components/schemas/CampaignCreate"
+        - type: object
+          properties:
+            campaignId:
+              type: integer
+              description: goTom ID of the Campaign (Sometimes known as Booking ID)
+
+            salesSupportId:
+              nullable: true
+              description: Correspons with the field "Innendienst"
+              type: integer
+              example: 42
+
+            salesSupportEmail:
+              nullable: true
+              description: E-Mail of the sales support user ("Innendienst")
+              type: string
+              example: sales-support@acme-corp.ch
+
+            salesId:
+              nullable: true
+              description: Corresponds with the field "Verkauf"
+              type: integer
+              example: 23
+
+            salesEmail:
+              nullable: true
+              description: E-Mail of the sales user ("Verkauf")
+              type: string
+              example: sales@acme-corp.ch
+
+            campaignTypeId:
+              nullable: true
+              description: goTom ID of the Campaign Type on the Campaign
+              type: integer
+              example: 1
+
+            campaignTypeReference:
+              nullable: true
+              description: Reference for Campaign Type
+              type: string
+
+            flights:
+              type: array
+              items:
+                $ref: "#/components/schemas/FlightRead"
+
+
+    CampaignSalesMixin:
+      anyOf:
+        - oneOf:
+            -
+              type: object
+              properties:
+                salesSupportId:
+                  description: Correspons with the field "Innendienst"
+                  type: integer
+                  example: 42
+            -
+              type: object
+              properties:
+                salesSupportEmail:
+                  description: Correspons with the field "Innendienst"
+                  type: string
+                  example: sales-support@acme-corp.ch
+        - oneOf:
+            -
+              type: object
+              properties:
+                salesId:
+                  description: Corresponds with the field "Verkauf"
+                  type: integer
+                  example: 23
+            -
+              type: object
+              properties:
+                salesEmail:
+                  description: Corresponds with the field "Verkauf"
+                  type: string
+                  example: sales-support@acme-corp.ch
+
+    Flight:
+      title: A goTom Flight
+      type: object
+      properties:
+        runtime:
+          type: object
+          title: Start and Enddate of the flight
+          properties:
+            start:
+              type: object
+              allOf:
+                - $ref: "#/components/schemas/DateTimeComponents"
+            end:
+              type: object
+              allOf:
+                - $ref: "#/components/schemas/DateTimeComponents"
+
+        tarifId:
+          description: Corresponds with the field "Tarif"
+          type: integer
+        mediaId:
+          description: Corresponds with the field "Medium"
+          type: integer
+        extraPriceLevelId:
+          description: Corresponds with the field "Extra Preis Ebene"
+          type: integer
+
+        platformId:
+          description: Corresponds with the field "Platform"
+          type: integer
+
+        channelId:
+          description: Corresponds with the field "Channel"
+          type: integer
+
+        advertisingId:
+          description: Corresponds with the field "Werbemittel"
+          type: integer
+
+        priceTypeId:
+          description: Corresponds with the field "Preistyp"
+          type: integer
+
+        units:
+          description: Corresponds with the field "Anzahl Einheiten"
+          type: integer
+
+        bruttoPriceUnit:
+          description: Corresponds with the field "Finaler Bruttopreis Einheit"
+          type: number
+
+        advertisingStatus:
+          description: Corresponds with the field "WM Status"
+          type: string
+          enum:
+            - open
+            - received
+            - integrated
+
+        note:
+          description: Corresponds with the field "Bemerkungen"
+          type: string
+
+        noteInternal:
+          description: Corresponds with the field "Interne Bemerkungen"
+          type: string
+
+        noteBilling:
+          description: Corresponds with the field "Faktura Bemerkungen"
+          type: string
+
+        keyValueSets:
+          description: Corresponds with the field "Targeting Configuration -> Key / Values"
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValueSet'
+
+    FlightCreate:
+      required:
+        - externalId
+        - runtime
+        - tarifId
+        - mediaId
+        - platformId
+        - channelId
+        - advertisingId
+        - priceTypeId
+        - units
+      allOf:
+        - $ref: "#/components/schemas/Flight"
+        - type: object
+          properties:
+            externalId:
+              type: string
+
+    FlightRead:
+      allOf:
+        - $ref: "#/components/schemas/FlightCreate"
+
+    FlightSublines:
+      title: Represents the sublines for a flight (only for network flights)
+      type: object
+      properties:
+        sublines:
+          type: array
+          items:
+            properties:
+              platformId:
+                title: Platform of the network
+                type: integer
+              percentage:
+                title: Share of the platform in percent (42.5% = 42.5).
+                example: 42.5
+                type: number
+
+    ContactRef:
+      title: This entity represents either a customer, agency, intermediator or publisher, either the external ID or the goTom ID can be set
+      type: object
+      properties:
+        entityId:
+          title: ID of the entity (might be a customer, agency, intermediator of publisher) for this contact (corresponds to the "Kunde", "Vermittler", "Agentur" field)
+          type: integer
+        entityExternalId:
+          title: ID of the entity (might be a customer, agency, intermediator of publisher) for this contact (corresponds to the "Kunde", "Vermittler", "Agentur" field)
+          type: string
+        addressId:
+          title: ID of the address for this contact (corresponds to the "Adresse" field in the UI)
+          type: integer
+          nullable: true
+        addressExternalId:
+          title: External ID of the address for this contact (corresponds to the "Adresse" field in the UI)
+          type: string
+          nullable: true
+        personId:
+          title: ID of the person for this contact (corresponds to the "Kontakt" field)
+          type: integer
+          nullable: true
+        personExternalId:
+          title: External ID of the person for this contact (corresponds to the "Kontakt" field)
+          type: string
+          nullable: true
+
+    DateTimeComponents:
+      title: Represents date and time (timezone is implicitly always the "system timezone" of goTom)
+      required:
+        - date
+      properties:
+        date:
+          type: string
+          format: date
+        time:
+          title: Time without seconds in the format HH:MM
+          type: string
+          example: 12:34
+          pattern: '^\d{2}:\d{2}$'
+
+
+    AnyValue:
+      description: Can be any value - string, number, boolean, array or object.
+      nullable: true
+      anyOf:
+        - type: string
+        - type: number
+        - type: integer
+        - type: boolean
+        - type: array
+          items: { }
+        - type: object
+
+    InternalServerErrorResponse:
+      properties:
+        message:
+          type: string
+          example: Internal Server Error
+
+    ConstraintViolationResponse:
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConstraintViolationItem'
+
+    ConstraintViolationItem:
+      properties:
+        propertyPath:
+          type: string
+        message:
+          type: string
+        invalidValue:
+          $ref: '#/components/schemas/AnyValue'
+        cause:
+          $ref: '#/components/schemas/AnyValue'
+        code:
+          type: string
+
+    Document:
+      properties:
+        name:
+          type: string
+          example: Test.pdf
+        content:
+          type: string
+          format: byte
+          description: base64 encoded file content
+
+    KeyValueSet:
+      properties:
+        adServerId:
+          type: string
+        keyValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValue'
+
+    KeyValue:
+      properties:
+        id:
+          description: AdServer Id of KeyValue
+          type: string
+        label:
+          type: string
+        comparisonOperator:
+          description: 0 = equal, 1 = unequal
+          type: integer
+          enum:
+            - 0
+            - 1
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValueValue'
+
+    KeyValueValue:
+      properties:
+        id:
+          description: AdServer Id of KeyValue Value or "custom_{value}" for freetext values. For example the freetext value "15" has to be "custom_15"
+          type: string
+        label:
+          type: string
